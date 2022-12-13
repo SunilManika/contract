@@ -9,9 +9,9 @@ COPY company_credit_data.csv .
 
 RUN yum clean all
 
-RUN yum install -y -q python39
-RUN python3 -m pip install -r requirements.txt
+RUN yum install -y -q python39 gcc* python39-devel
+RUN python3.9 -m pip install -r requirements.txt
 
 EXPOSE 9101
 
-CMD ["python3", "run.py"]
+CMD ["python3.9", "run.py"]
