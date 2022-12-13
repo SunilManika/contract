@@ -3,8 +3,6 @@
 """
 Created on 14 Nov 2022
 @author: shanmsel@in.ibm.com
-import ibm_db, ibm_db_dbi as dbi
-ibm-db==3.1.4
 """
 import json,os,re,time,requests,bios
 from ibm_watson import NaturalLanguageUnderstandingV1
@@ -12,17 +10,18 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson.natural_language_understanding_v1 import Features, EntitiesOptions, KeywordsOptions, CategoriesOptions, ClassificationsOptions
 from flask import Flask, flash, request, redirect, render_template,jsonify
 import PyPDF2,pandas as pd
+import ibm_db, ibm_db_dbi as dbi
 
 
 
 
-# #CloudDB Credentials
-# CloudDB_dsn = 'DATABASE={};HOSTNAME={};PORT={};PROTOCOL=TCPIP;UID={uid};PWD={pwd};SECURITY=SSL'.format(
-#         'bludb',
-#         'b1bc1829-6f45-4cd4-bef4-10cf081900bf.c1ogj3sd0tgtu0lqde00.databases.appdomain.cloud',
-#         32304,
-#         uid='jhw60694',
-#         pwd="""gBZNmyBUQa0JBDVH""")
+#CloudDB Credentials
+CloudDB_dsn = 'DATABASE={};HOSTNAME={};PORT={};PROTOCOL=TCPIP;UID={uid};PWD={pwd};SECURITY=SSL'.format(
+        'bludb',
+        'b1bc1829-6f45-4cd4-bef4-10cf081900bf.c1ogj3sd0tgtu0lqde00.databases.appdomain.cloud',
+        32304,
+        uid='jhw60694',
+        pwd="""gBZNmyBUQa0JBDVH""")
 
 #Read Configuration
 # config_yml=bios.read("config.yaml")
@@ -183,33 +182,38 @@ def fileupload():
   return jsonify(mod_final_data)
 
 
-# @app.route('/getevents', methods=['GET'])    
-# def getevents():
-#   #DBConnect
-#   CloudDB_connection = dbi.connect(CloudDB_dsn)
-#   #Read from database
-#   db_df=pd.read_sql("select * from JHW60694.CM_EVENT_CALENDER",CloudDB_connection) 
-#   CloudDB_connection.close()
-#   return db_df.to_json(orient="records")
+@app.route('/getevents', methods=['GET'])    
+def getevents():
+  #DBConnect
+  CloudDB_connection = dbi.connect(CloudDB_dsn)
+  #Read from database
+  db_df=pd.read_sql("select * from JHW60694.CM_EVENT_CALENDER",CloudDB_connection) 
+  CloudDB_connection.close()
+  return db_df.to_json(orient="records")
 
-# @app.route('/insertevents', methods=['POST'])    
-# def insertevents():
-#   request_data = request.get_json()
-#   #DBConnect
-#   cloud_db_conn = ibm_db.connect(CloudDB_dsn,'','')
+@app.route('/insertevents', methods=['POST'])    
+def insertevents():
+  request_data = request.get_json()
+  #DBConnect
+  cloud_db_conn = ibm_db.connect(CloudDB_dsn,'','')
 
-#   # data_json='''[{"EVENT_ID":"202020","EVENT_NAME":"AccountPay","EVENT_SCOPE":"Payment","CREATION_DATE":"2012-01-01","EFFECTIVE_DATE":"2012-01-01","CASE_ID":"1234"}]'''
+  # data_json='''[{"EVENT_ID":"202020","EVENT_NAME":"AccountPay","EVENT_SCOPE":"Payment","CREATION_DATE":"2012-01-01","EFFECTIVE_DATE":"2012-01-01","CASE_ID":"1234"}]'''
 
-#   final_wd_df=pd.read_json(request_data)
-#   cols = ",".join([str(i) for i in final_wd_df.columns.tolist()])
-#   tuple_of_tuples = tuple([tuple(x) for x in final_wd_df.values])
+  final_wd_df=pd.read_json(request_data)
+  cols = ",".join([str(i) for i in final_wd_df.columns.tolist()])
+  tuple_of_tuples = tuple([tuple(x) for x in final_wd_df.values])
 
-#   sql="INSERT INTO JHW60694.CM_EVENT_CALENDER (" + cols + ") VALUES (?,?,?,?,?,?)"
-#   stmt=ibm_db.prepare(cloud_db_conn,sql)
-#   rows_inserted=ibm_db.execute_many(stmt,tuple_of_tuples)
-#   ibm_db.close(cloud_db_conn)
-#   return jsonify({"NoOfRowsAdded:",rows_inserted})
+  sql="INSERT INTO JHW60694.CM_EVENT_CALENDER (" + cols + ") VALUES (?,?,?,?,?,?)"
+  stmt=ibm_db.prepare(cloud_db_conn,sql)
+  rows_inserted=ibm_db.execute_many(stmt,tuple_of_tuples)
+  ibm_db.close(cloud_db_conn)
+  return jsonify({"NoOfRowsAdded:",rows_inserted})
   
+
+@app.route('/')
+def home():
+    return 'Welcome to Python Flask!'
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=port,debug=False)
+    app.run(host='0.0.0.0',port=9101,debug=False)
 
