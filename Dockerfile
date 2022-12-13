@@ -9,7 +9,7 @@ COPY company_credit_data.csv .
 
 RUN yum clean all
 
-RUN yum install -y python39
+RUN yum install -y -q python39
 RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 9101
